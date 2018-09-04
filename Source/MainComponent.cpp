@@ -87,7 +87,12 @@ MainContentComponent::MainContentComponent()
     addAndMakeVisible(widget);
     addAndMakeVisible(showCSButton);
     showCSButton.addListener(this);
+#if JUCE_IOS
+    auto area = Desktop::getInstance().getDisplays().getMainDisplay().userArea;
+    setSize( area.getWidth(), area.getHeight() );
+#else
     setSize (600, 400);
+#endif
 }
 
 MainContentComponent::~MainContentComponent()

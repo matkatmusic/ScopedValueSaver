@@ -39,6 +39,7 @@ struct PropertyManager
     ~PropertyManager()
     {
         properties.saveIfNeeded();
+        DBG( "properties file path: " << properties.getUserSettings()->getFile().getFullPathName() );
     }
     
     ApplicationProperties& getProperties() { return properties; }
@@ -161,7 +162,7 @@ struct ScopedValueSaver : public Value::Listener
             //DBG( "value changed" );
             updateActualValue();
             updatePropertiesFile();
-            //props->dump("post-update");
+//            props->dump("post-update");
             if( changeCallback )
             {
                 changeCallback(value);

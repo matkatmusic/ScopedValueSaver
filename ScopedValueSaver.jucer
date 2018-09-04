@@ -37,6 +37,28 @@
         <MODULEPATH id="juce_audio_processors" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
+    <XCODE_IPHONE targetFolder="Builds/iOS" iosScreenOrientation="landscape" UIFileSharingEnabled="1">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="ScopedValueSaver"
+                       cppLanguageStandard="c++17" cppLibType="libc++"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="ScopedValueSaver"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_video" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_events" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_core" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+      </MODULEPATHS>
+    </XCODE_IPHONE>
   </EXPORTFORMATS>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
