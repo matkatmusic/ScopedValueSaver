@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="w9s9bC" name="ScopedValueSaver" projectType="guiapp" version="1.0.0"
+              bundleIdentifier="com.yourcompany.ScopedValueSaver" includeBinaryInAppConfig="1"
+              jucerVersion="4.3.1">
+  <MAINGROUP id="Php4IU" name="ScopedValueSaver">
+    <GROUP id="{8027E86C-E971-4125-BEA0-1163071727D2}" name="Source">
+      <FILE id="MBNf8P" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="Qqdh5P" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="DDmEs0" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="ScopedValueSaver"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="ScopedValueSaver"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_events" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_video" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../Dropbox/CharlesShared/JUCE-4_3_1/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>
