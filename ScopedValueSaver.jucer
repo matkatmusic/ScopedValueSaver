@@ -2,9 +2,11 @@
 
 <JUCERPROJECT id="w9s9bC" name="ScopedValueSaver" projectType="guiapp" version="1.0.0"
               bundleIdentifier="com.yourcompany.ScopedValueSaver" includeBinaryInAppConfig="1"
-              jucerVersion="4.3.1">
+              jucerVersion="4.3.1" companyName="MatkatMusic">
   <MAINGROUP id="Php4IU" name="ScopedValueSaver">
     <GROUP id="{8027E86C-E971-4125-BEA0-1163071727D2}" name="Source">
+      <FILE id="d7j96I" name="ScopedValueSaver.h" compile="0" resource="0"
+            file="Source/ScopedValueSaver.h"/>
       <FILE id="MBNf8P" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
       <FILE id="Qqdh5P" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
