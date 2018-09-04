@@ -11,6 +11,11 @@
 
 //==============================================================================
 ColourSelectorWidget::ColourSelectorWidget(Widget& widget) :
+/*
+ csColour "follows" the value of widget.widgetColor.
+ whenever widget.widgetColor's value changes, the lambda
+ in the constructor of csColour will be called
+ */
 csColour( widget.widgetColor.operator Value(),
          "csColour",
          [this]( Value& v )
