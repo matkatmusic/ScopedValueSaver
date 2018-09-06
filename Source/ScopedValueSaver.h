@@ -125,14 +125,11 @@ struct ScopedValueSaver : public Value::Listener, public PropertyManager::Proper
      creates a ScopedValueSaver from an existing juce::Value.
      
      @param valueToFollow an Existing juce::Value object
-     @param name the name of the property to set in the ApplicationProperties file
      @param changeFunc a lambda to call when the valueChanged callback is called.  This lets you express specific work, if any, that should happen when the underlying value object changes.
      */
     ScopedValueSaver(const Value& valueToFollow,
-                     StringRef name,
                      std::function<void(Value&)> changeFunc) :
-    changeCallback(std::move(changeFunc)),
-    keyName(name)
+    changeCallback(std::move(changeFunc))
     {
         setup();
         value.referTo(valueToFollow);

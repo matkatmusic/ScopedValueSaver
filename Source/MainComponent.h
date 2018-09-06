@@ -45,7 +45,34 @@ struct Widget : public Component
     ScopedValueSaver<Colour> widgetColor;
 };
 //==============================================================================
-class MainContentComponent   : public Component, public Button::Listener
+struct ValuePlus : public Value::Listener
+{
+    ValuePlus(StringRef n) : name(n) { value.addListener(this); }
+    ValuePlus(const Value& valueToFollow, StringRef n) : name(n)
+    {
+        value.referTo(valueToFollow);
+        value.addListener(this);
+    }
+    ~ValuePlus() { value.removeListener(this); }
+    
+    template<typename OtherType>
+    ValuePlus& operator=(const OtherType& other)
+    {
+        value = VariantConverter<OtherType>::toVar(other);
+        return *this;
+    }
+    
+    Value value;
+    StringRef name;
+    void valueChanged(Value& v) override { DBG( name << " changed. new value: " << value.toString()); }
+    operator Value() const noexcept { return value; }
+    const Value& getValue() { return value; }
+};
+//==============================================================================
+class MainContentComponent   :
+public Component,
+public Button::Listener,
+public Timer
 {
 public:
     MainContentComponent();
@@ -55,11 +82,15 @@ public:
     void resized() override;
     
     void buttonClicked(Button* b) override;
+    void timerCallback() override;
 private:
     Widget widget;
     TextButton showCSButton{"Show Color Selector"};
     ScopedPointer<ColourSelectorWidget> csWidget;
     bool showWidget{false};
+    
+    ValuePlus a;
+    ValuePlus aFollower;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
 };
 

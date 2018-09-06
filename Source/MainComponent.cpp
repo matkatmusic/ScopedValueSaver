@@ -16,14 +16,14 @@ ColourSelectorWidget::ColourSelectorWidget(Widget& widget) :
  whenever widget.widgetColor's value changes, the lambda
  in the constructor of csColour will be called
  */
-csColour( widget.widgetColor.operator Value(),
-         "csColour",
+csColour(widget.widgetColor.operator Value(),
          [this]( Value& v )
          {
              if( v == csColour )
              {
                  /*
                   csColour converts to Colour via ScopedValueSaver<>::operator Type()
+                  
                   */
                  this->setCurrentColour(csColour);
              }
@@ -41,13 +41,18 @@ void ColourSelectorWidget::changeListenerCallback(juce::ChangeBroadcaster *sourc
 {
     if( source == this )
     {
+        //this will updated widget.widgetColor
         csColour = getCurrentColour();
     }
 }
 //==============================================================================
-Widget::Widget() : widgetColor("widgetColor",
-                               Colours::red,
-                               [this](Value&) {this->repaint();} )
+Widget::Widget() :
+widgetColor("widgetColor",
+            Colours::red,
+            [this](Value&)
+            {
+                this->repaint();
+            })
 {
     setPaintingIsUnclipped(true);
 }
@@ -82,7 +87,9 @@ void Widget::mouseDown(const MouseEvent& e)
     widgetColor = Colour(r, g, b);
 }
 //==============================================================================
-MainContentComponent::MainContentComponent()
+MainContentComponent::MainContentComponent() :
+a("a"),
+aFollower(a, "aFollower" )
 {
     addAndMakeVisible(widget);
     addAndMakeVisible(showCSButton);
@@ -93,10 +100,27 @@ MainContentComponent::MainContentComponent()
 #else
     setSize (600, 400);
 #endif
+    a = 1.5f;
+    //startTimer(2000);
 }
 
 MainContentComponent::~MainContentComponent()
 {
+}
+
+void MainContentComponent::timerCallback()
+{
+    static int counter = 0;
+    if( counter == 0 )
+    {
+        a = 2.f;
+        counter += 1;
+    }
+    else if( counter == 1 )
+    {
+        aFollower = 2.5f;
+        stopTimer();
+    }
 }
 
 void MainContentComponent::paint (Graphics& g)
