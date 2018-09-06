@@ -15,6 +15,14 @@
 
 struct PropertyManager
 {
+    struct Property
+    {
+        Property() {}
+        virtual ~Property() {}
+        
+        virtual void resetToDefault() = 0;
+    };
+    
     PropertyManager()
     {
         jassert( String(ProjectInfo::projectName).isNotEmpty() );
@@ -27,8 +35,8 @@ struct PropertyManager
         options.folderName = String(ProjectInfo::companyName) + File::separatorString + String(ProjectInfo::projectName);
         options.storageFormat = PropertiesFile::storeAsXML;
         
-        properties.setStorageParameters(options);
-        auto* settings = properties.getUserSettings();
+        appProperties.setStorageParameters(options);
+        auto* settings = appProperties.getUserSettings();
         if( !settings->getFile().existsAsFile() )
         {
             settings->getFile().create();
@@ -38,19 +46,47 @@ struct PropertyManager
     
     ~PropertyManager()
     {
-        properties.saveIfNeeded();
-        DBG( "properties file path: " << properties.getUserSettings()->getFile().getFullPathName() );
+        appProperties.saveIfNeeded();
+        DBG( "properties file path: " << appProperties.getUserSettings()->getFile().getFullPathName() );
     }
     
-    ApplicationProperties& getProperties() { return properties; }
+    ApplicationProperties& getProperties() { return appProperties; }
     
     void dump(StringRef prefix="settings: ")
     {
         DBG( prefix );
-        DBG( properties.getUserSettings()->getFile().loadFileAsString() );
+        DBG( appProperties.getUserSettings()->getFile().loadFileAsString() );
+    }
+    
+    /**
+     resets all registered properties to their default value.
+     */
+    void resetAllToDefault()
+    {
+        ScopedLock sl(propertyLock);
+        for( int i = properties.size(); --i >= 0; )
+        {
+            properties.getUnchecked(i)->resetToDefault();
+        }
+    }
+    
+    void addProperty(Property* p)
+    {
+        ScopedLock sl(propertyLock);
+        properties.addIfNotAlreadyThere(p);
+    }
+    
+    void removeProperty(Property* p)
+    {
+        ScopedLock sl(propertyLock);
+        properties.removeFirstMatchingValue(p);
     }
 private:
-    ApplicationProperties properties;
+    ApplicationProperties appProperties;
+    Array<Property*> properties;
+    CriticalSection propertyLock;
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PropertyManager)
 };
 
 //==============================================================================
@@ -62,7 +98,7 @@ private:
  a keyName that exists in the properties file
  */
 template<typename Type>
-struct ScopedValueSaver : public Value::Listener
+struct ScopedValueSaver : public Value::Listener, public PropertyManager::Property
 {
     /**
      creates a ScopedValueSaver with a specific name. if no other arguments are provided,
@@ -81,7 +117,7 @@ struct ScopedValueSaver : public Value::Listener
     defaultValue(initialValue),
     actualValue(initialValue)
     {
-        value.addListener(this);
+        setup();
         restore(initialValue);
     }
     
@@ -98,7 +134,7 @@ struct ScopedValueSaver : public Value::Listener
     changeCallback(std::move(changeFunc)),
     keyName(name)
     {
-        value.addListener(this);
+        setup();
         value.referTo(valueToFollow);
         updateActualValue();
         updatePropertiesFile(); //create an entry in Properties as soon as we exist
@@ -107,7 +143,7 @@ struct ScopedValueSaver : public Value::Listener
     ///copy constructor
     ScopedValueSaver (const ScopedValueSaver& other)
     {
-        value.addListener(this);
+        setup();
         value = other.value.getValue();
         updateActualValue();
         changeCallback = other.changeCallback;
@@ -124,7 +160,7 @@ struct ScopedValueSaver : public Value::Listener
     ///copy assignment operator
     ScopedValueSaver& operator= (const ScopedValueSaver& other) noexcept
     {
-        value.addListener(this);
+        setup();
         value = other.value.getValue();
         updateActualValue();
         changeCallback = other.changeCallback;
@@ -142,8 +178,9 @@ struct ScopedValueSaver : public Value::Listener
     template<typename OtherType>
     ScopedValueSaver<Type>& operator=( const OtherType& other)
     {
-        value.addListener(this);
+        //value.addListener(this); //value already had the listener added!
         value = VariantConverter<OtherType>::toVar(other);
+        updateActualValue();
         
         updatePropertiesFile();
         return *this;
@@ -159,10 +196,10 @@ struct ScopedValueSaver : public Value::Listener
     {
         if( changedVal == value )
         {
-            //DBG( "value changed" );
+            DBG( "value changed" );
             updateActualValue();
             updatePropertiesFile();
-//            props->dump("post-update");
+            //            props->dump("post-update");
             if( changeCallback )
             {
                 changeCallback(value);
@@ -193,7 +230,7 @@ struct ScopedValueSaver : public Value::Listener
      @return a juce::Value version of Type
      */
     operator Value() const noexcept { return value; }
-
+    
     /**
      Allows this object to behave like Type
      
@@ -227,7 +264,7 @@ struct ScopedValueSaver : public Value::Listener
     /**
      resets the internal juce::Value and Type actualValue objects to the default value
      */
-    void reset()
+    void resetToDefault() override
     {
         value = VariantConverter<Type>::toVar( defaultValue );
         actualValue = defaultValue;
@@ -255,6 +292,12 @@ struct ScopedValueSaver : public Value::Listener
         updatePropertiesFile();
     }
 private:
+    void setup()
+    {
+        props->addProperty(this);
+        value.addListener(this);
+    }
+    
     void updateActualValue()
     {
         actualValue = VariantConverter<Type>::fromVar(value.getValue());
@@ -262,10 +305,9 @@ private:
     
     void updatePropertiesFile()
     {
-        DBG( "updating properties with changed value..." );
-        
         if( keyName.isNotEmpty() )
         {
+            DBG( "updating properties with changed value for: " << keyName );
             props->getProperties().getUserSettings()->setValue(keyName,
                                                                value);
             props->getProperties().saveIfNeeded();
@@ -321,139 +363,14 @@ private:
     
     /**
      the default value.  this is initialized when you first create a ScopedValueSaver using the initialValue constructor
-     
+     if you use the other constructor, this is initialized via the = Type().  your Type is expected to have a default constructor
      */
     Type defaultValue = Type();
+    
     
     Type actualValue;
     
     JUCE_LEAK_DETECTOR(ScopedValueSaver)
-};
-//=============================================================================
-/*
- an example of a complex object and how to convert it to/from a var
- */
-struct ComplexType
-{
-    ComplexType(float a, bool b_, int c) : f(a), b(b_), i(c) {}
-    ComplexType() {}
-    ~ComplexType() {}
-    float f{42.f};
-    bool b{true};
-    int i{42};
-};
-
-template<>
-struct VariantConverter<ComplexType>
-{
-    static var toVar(const ComplexType& c)
-    {
-        var v(new DynamicObject() );
-        v.getDynamicObject()->setProperty("f", c.f);
-        v.getDynamicObject()->setProperty("b", c.b);
-        v.getDynamicObject()->setProperty("i", c.i);
-        
-        return JSON::toString(v);
-    }
-    static ComplexType fromVar(const var& v)
-    {
-        var json = JSON::fromString( v.toString() );
-        
-        float f = json.getProperty("f", {} );
-        bool b = json.getProperty("b", {});
-        int i = json.getProperty("i", {});
-        
-        return ComplexType(f, b, i);
-    }
-};
-//=============================================================================
-struct Tests
-{
-    static void runTests()
-    {
-        juce::SharedResourcePointer<PropertyManager> props;
-        props->dump("Tests::runTests() entry");
-        
-        /*
-         test 1
-         */
-        {
-            /*
-             This should first look in the ApplicationProperties file for a property called "floatValue"
-             if it's found, floatValue should be initialized to that value.
-             if it's not found, it should be initialized to the initialValue, which is 2.5f
-             if initialValue is not provided, it should be initialized to float()
-             after the SVS is created and initialized, it'll update props
-             */
-            ScopedValueSaver<float> floatValue("floatValue", 2.5f, nullptr);
-            props->dump( "added floatValue" );
-            //create a scoped state
-            {
-                /*
-                 this should create a SVS that follows the value of floatValue
-                 when floatValue changes, tempValue will be updated
-                 when tempValue changes, it should update floatValue
-                 */
-                ScopedValueSaver<float> tempValue(floatValue, "tempValue", nullptr);
-                props->dump( "added tempValue" );
-                floatValue = 3.5f;  //does this update tempValue?
-                props->dump( "floatValue = 3.5f;" );
-                tempValue = 4.5f;   //does this update floatValue?
-                props->dump( "tempValue = 4.5f" );
-                //when tempValue is destroyed, its value should be written to settings
-            }
-            
-            floatValue = 1.5f;
-            props->dump("floatValue = 1.5f");
-            
-            auto passTypeByVal = [](float val)
-            {
-                DBG( "passTypeByVal: " << val );
-            };
-            
-            //this should call ScopedValueSaver::operator Type(), where Type() is 'float'
-            passTypeByVal(floatValue);
-            
-            auto passWrapperByVal = [](ScopedValueSaver<float> svs)
-            {
-                DBG( "passWrapperByVal: " << svs.operator var().toString() );
-            };
-            
-            //this calls ScopedValueSaver(const ScopedValueSaver& other)
-            passWrapperByVal(floatValue);
-            
-            auto passWrapperByRef = [](const ScopedValueSaver<float>& svs)
-            {
-                DBG( "passWrapperByRef: " << svs.operator var().toString() );
-            };
-            
-            passWrapperByRef(floatValue);
-        }
-        
-        //test 2: Complex objects
-        {
-            //ComplexType needs a VariantConverter
-            
-            //passing no initial value
-            ScopedValueSaver<ComplexType> complexType1("complexType1");
-            //passing an initial value
-            ScopedValueSaver<ComplexType> complexType2("complexType2", ComplexType{3.f, false, 10} );
-            
-            /*
-             ideally I'd be able to do this:
-             
-             complexType1.f = 44.f;
-             and it would call valueChanged;
-             
-             but C++ doesn't allow operator.() overloading.
-             instead, use ScopedValueSaver<>::getActualValue() to access your Type members
-             then manually save() your ScopedValueSaver object
-             */
-            complexType2.getActualValue().f = 43.f;
-            complexType2.save();
-        }
-        DBG( "done" );
-    }
 };
 
 #endif  // SCOPEDVALUESAVER_H_INCLUDED
