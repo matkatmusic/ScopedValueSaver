@@ -117,6 +117,7 @@ struct ScopedValueSaver : public Value::Listener, public PropertyManager::Proper
     defaultValue(initialValue),
     actualValue(initialValue)
     {
+        DBG( "ScopedValueSaver InitialVal Ctor" );
         setup();
         restore(initialValue);
     }
@@ -131,6 +132,7 @@ struct ScopedValueSaver : public Value::Listener, public PropertyManager::Proper
                      std::function<void(Value&)> changeFunc) :
     changeCallback(std::move(changeFunc))
     {
+        DBG( "ScopedValueSaver FOLLOW Ctor" );
         setup();
         value.referTo(valueToFollow);
         updateActualValue();
@@ -140,6 +142,7 @@ struct ScopedValueSaver : public Value::Listener, public PropertyManager::Proper
     ///copy constructor
     ScopedValueSaver (const ScopedValueSaver& other)
     {
+        DBG( "ScopedValueSaver COPY Ctor" );
         setup();
         value = other.value.getValue();
         updateActualValue();
@@ -157,6 +160,7 @@ struct ScopedValueSaver : public Value::Listener, public PropertyManager::Proper
     ///copy assignment operator
     ScopedValueSaver& operator= (const ScopedValueSaver& other) noexcept
     {
+        DBG( "ScopedValueSaver operator= (const ScopedValueSaver& )" );
         setup();
         value = other.value.getValue();
         updateActualValue();
@@ -175,6 +179,7 @@ struct ScopedValueSaver : public Value::Listener, public PropertyManager::Proper
     template<typename OtherType>
     ScopedValueSaver<Type>& operator=( const OtherType& other)
     {
+        DBG( "ScopedValueSaver operator=( const OtherType& )" );
         //value.addListener(this); //value already had the listener added!
         value = VariantConverter<OtherType>::toVar(other);
         updateActualValue();
@@ -343,10 +348,10 @@ private:
     }
     
     ///the internal listenable value object
-    juce::Value value;
+    juce::Value value{};
     
     ///the callback to fire when the value changes
-    std::function<void(juce::Value&)> changeCallback;
+    std::function<void(juce::Value&)> changeCallback{nullptr};
     
     /**
      the SharedResourcePointer is like a combination of a Singleton and a std::shared_ptr.
@@ -356,7 +361,7 @@ private:
     juce::SharedResourcePointer<PropertyManager> props;
     
     ///the name to use when writing/reading this value to/from disk.
-    juce::StringRef keyName;
+    juce::String keyName{};
     
     /**
      the default value.  this is initialized when you first create a ScopedValueSaver using the initialValue constructor
@@ -365,7 +370,7 @@ private:
     Type defaultValue = Type();
     
     
-    Type actualValue;
+    Type actualValue{};
     
     JUCE_LEAK_DETECTOR(ScopedValueSaver)
 };
